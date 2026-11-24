@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Play Cagnes | Football à 5</title>
+    
+    <!-- Polices -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        charcoal: '#111111',
+                        offwhite: '#F5F5F0',
+                        electric: '#C6FF00',
+                        urbangray: '#777777'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #111111; color: #F5F5F0; }
+        .font-heading { font-family: 'Montserrat', sans-serif; text-transform: uppercase; }
+        .section-page { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .section-page.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bg-hero {
+            background-image: linear-gradient(rgba(17, 17, 17, 0.6), rgba(17, 17, 17, 0.9)), url('https://images.unsplash.com/photo-1518605368461-1e1e38ce81ba?auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* Styles de la carte 3D interactive des terrains */
+        .pitch-scene {
+            perspective: 1100px;
+            padding: 2.5rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.75rem;
+            flex-wrap: wrap;
+        }
+
+        .pitch-3d {
+            width: 130px;
+            height: 205px;
+            position: relative;
+            transform: rotateX(50deg) rotateZ(-30deg);
+            transform-style: preserve-3d;
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.85);
+            box-shadow: -8px 14px 18px rgba(0,0,0,0.6);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            user-select: none;
+        }
+
+        /* Marquages au sol du terrain */
+        .pitch-3d::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(255,255,255,0.75);
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+        .pitch-3d::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 36px;
+            height: 36px;
+            border: 2px solid rgba(255,255,255,0.75);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        /* Terrain disponible (Vert électrique) */
+        .pitch-available {
+            background: linear-gradient(135deg, #9ed600, #C6FF00);
+            color: #111111;
+            cursor: pointer;
+        }
+        .pitch-available:hover {
+            transform: rotateX(50deg) rotateZ(-30deg) translateZ(16px);
+            box-shadow: -16px 24px 28px rgba(198, 255, 0, 0.3);
+            border-color: #111111;
+        }
+
+        /* Terrain utilisé / réservé (Rouge) */
+        .pitch-occupied {
+            background: linear-gradient(135deg, #991b1b, #ef4444);
+            color: #F5F5F0;
+            cursor: not-allowed;
+            opacity: 0.85;
+        }
+
+        /* Terrain sélectionné par l'utilisateur */
+        .pitch-selected {
+            border: 4px solid #ffffff !important;
+            transform: rotateX(50deg) rotateZ(-30deg) translateZ(22px) !important;
+            box-shadow: -18px 28px 36px rgba(198, 255, 0, 0.5) !important;
+        }
+
+        .pitch-text {
+            z-index: 10;
+            transform: rotateZ(30deg);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111111; }
+        ::-webkit-scrollbar-thumb { background: #C6FF00; border-radius: 4px; }
+    </style>
+</head>
+<body class="font-sans antialiased text-offwhite bg-charcoal">
+
+    <!-- Top Bar -->
+    <div class="bg-charcoal text-offwhite text-xs py-2 text-center border-b border-gray-800 tracking-wider">
+        CAGNES-SUR-MER · FOOTBALL À 5 · ACCÈS AUTONOME
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-charcoal/95 backdrop-blur-md border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center cursor-pointer" onclick="navigate('accueil')">
+                    <span class="font-heading text-2xl font-black tracking-tighter text-offwhite">URBAN<span class="text-electric">PLAY</span></span>
+                </div>
+                
+                <div class="hidden md:flex space-x-8 items-center">
+                    <button onclick="navigate('accueil')" class="hover:text-electric transition-colors font-medium">Accueil</button>
+                    <button onclick="navigate('matchs')" class="hover:text-electric transition-colors font-medium">Matchs Ouverts</button>
+                    <button onclick="navigate('anniversaires')" class="hover:text-electric transition-colors font-medium">Anniversaires</button>
+                    <button onclick="navigate('faq')" class="hover:text-electric transition-colors font-medium">Infos Pratiques</button>
+                    <button onclick="navigate('reservation')" class="bg-electric text-charcoal font-heading px-6 py-3 rounded hover:bg-white transition-colors">RÉSERVER</button>
+                </div>
+
+                <!-- Menu Mobile -->
+                <div class="md:hidden flex items-center gap-3">
+                    <button onclick="navigate('reservation')" class="bg-electric text-charcoal font-heading text-xs px-4 py-2 rounded">RÉSERVER</button>
+                    <button onclick="toggleMobileMenu()" class="text-offwhite hover:text-electric p-2 focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Dropdown Mobile -->
+        <div id="mobile-menu" class="hidden md:hidden bg-charcoal border-b border-gray-800 px-4 pt-2 pb-4 space-y-2">
+            <button onclick="navigate('accueil'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-electric font-medium">Accueil</button>
+            <button onclick="navigate('matchs'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-electric font-medium">Matchs Ouverts</button>
+            <button onclick="navigate('anniversaires'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-electric font-medium">Anniversaires</button>
+            <button onclick="navigate('faq'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-electric font-medium">Infos Pratiques</button>
+        </div>
+    </nav>
+
+    <!-- VIEWS CONTAINER -->
+    <main id="app-container">
+
+        <!-- ================= PAGE ACCUEIL ================= -->
+        <section id="accueil" class="section-page active">
+            <!-- Hero -->
+            <div class="bg-hero h-[80vh] flex flex-col justify-center items-center text-center px-4">
+                <h1 class="font-heading text-5xl md:text-7xl font-black mb-6 tracking-tight text-white leading-tight">
+                    LE TERRAIN <br><span class="text-electric">T'ATTEND.</span>
+                </h1>
+                <p class="max-w-2xl text-lg md:text-xl mb-10 text-gray-200">
+                    Réunis ton équipe, choisis ton créneau et place le match au cœur de ton agenda. Le football à cinq, version urbaine.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button onclick="navigate('reservation')" class="bg-electric text-charcoal font-heading text-lg px-8 py-4 rounded hover:bg-white transition-all transform hover:scale-105">
+                        TROUVER UN CRÉNEAU
+                    </button>
+                    <button onclick="navigate('matchs')" class="border-2 border-offwhite text-offwhite font-heading text-lg px-8 py-4 rounded hover:bg-offwhite hover:text-charcoal transition-colors">
+                        DÉCOUVRIR LE CONCEPT
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bandeau -->
+            <div class="bg-electric text-charcoal py-4 overflow-hidden whitespace-nowrap">
+                <div class="font-heading text-2xl font-black tracking-widest text-center">
+                    TON MATCH. TON ÉQUIPE. TON HEURE. · TON MATCH. TON ÉQUIPE. TON HEURE.
+                </div>
+            </div>
+
+            <!-- Expériences -->
+            <div class="max-w-7xl mx-auto px-4 py-20">
+                <h2 class="font-heading text-4xl mb-12 text-center">NOS EXPÉRIENCES</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Carte 1 : Location de terrain -->
+                    <div class="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-electric transition-colors group cursor-pointer" onclick="navigate('reservation')">
+                        <div class="relative h-56 w-full bg-gray-800 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=900&q=80" alt="Location de terrain de football à 5" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-heading text-2xl mb-3 text-electric">LOCATION DE TERRAIN</h3>
+                            <p class="text-gray-400 mb-4">Choisis une date, un horaire et réserve un terrain pour jouer entre amis.</p>
+                            <span class="font-bold uppercase text-sm tracking-wider group-hover:text-electric transition-colors">Réserver &rarr;</span>
+                        </div>
+                    </div>
+
+                    <!-- Carte 2 : Rejoindre un match -->
+                    <div class="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-electric transition-colors group cursor-pointer" onclick="navigate('matchs')">
+                        <div class="relative h-56 w-full bg-gray-800 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1526232761682-d26e03ac148e?auto=format&fit=crop&w=900&q=80" alt="Rejoindre un match" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-heading text-2xl mb-3 text-electric">REJOINDRE UN MATCH</h3>
+                            <p class="text-gray-400 mb-4">Joueurs individuels, trouvez un match et complétez une équipe ouverte.</p>
+                            <span class="font-bold uppercase text-sm tracking-wider group-hover:text-electric transition-colors">Voir les matchs &rarr;</span>
+                        </div>
+                    </div>
+
+                    <!-- Carte 3 : Anniversaires avec vraie photo de fête d'anniversaire -->
+                    <div class="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-electric transition-colors group cursor-pointer" onclick="navigate('anniversaires')">
+                        <div class="relative h-56 w-full bg-gray-800 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=900&q=80" alt="Fête d'anniversaire" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-heading text-2xl mb-3 text-electric">ANNIVERSAIRES</h3>
+                            <p class="text-gray-400 mb-4">Organise des anniversaires sportifs pour enfants et adolescents sur nos terrains.</p>
+                            <span class="font-bold uppercase text-sm tracking-wider group-hover:text-electric transition-colors">Découvrir &rarr;</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE RÉSERVATION + IMAGE + PLAN 3D ================= -->
+        <section id="reservation" class="section-page py-16 px-4">
+            <div class="max-w-4xl mx-auto bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-2xl">
+                
+                <!-- Bannière photo de la section Location de terrain -->
+                <div class="relative h-56 sm:h-64 w-full bg-gray-800">
+                    <img src="https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=1600&q=80" alt="Terrains de football à 5 Urban Play Cagnes" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-charcoal/50 to-transparent flex flex-col justify-end p-6 md:px-12">
+                        <span class="text-electric font-bold text-xs uppercase tracking-widest mb-1">4 Terrains Indoor & Outdoor · Pelouse Dernière Génération</span>
+                        <h1 class="font-heading text-3xl sm:text-4xl text-white"><span class="text-electric">LOCATION</span> DE TERRAIN</h1>
+                    </div>
+                </div>
+
+                <div class="p-6 md:p-12 pt-6">
+                    <!-- Paramètres du créneau -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Date souhaitée</label>
+                            <input type="date" id="res-date" class="w-full bg-charcoal border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-electric" onchange="onSlotChange()">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Heure de début</label>
+                            <select id="res-time" class="w-full bg-charcoal border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-electric" onchange="onSlotChange()">
+                                <option value="">Choisir un horaire</option>
+                                <option value="18:00">18:00</option>
+                                <option value="19:00">19:00</option>
+                                <option value="20:00">20:00</option>
+                                <option value="21:00">21:00</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Durée du match</label>
+                            <select id="res-duration" class="w-full bg-charcoal border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-electric" onchange="updateRecap()">
+                                <option value="1">1 heure</option>
+                                <option value="1.5">1 h 30</option>
+                                <option value="2">2 heures</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Nombre de joueurs</label>
+                            <select id="res-players" class="w-full bg-charcoal border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-electric" onchange="updateRecap()">
+                                <option value="10">10 joueurs</option>
+                                <option value="12">12 joueurs</option>
+                                <option value="14">14 joueurs</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Type de réservation</label>
+                            <select id="res-type" class="w-full bg-charcoal border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-electric" onchange="updateRecap()">
+                                <option value="amis">Entre amis</option>
+                                <option value="anniversaire">Anniversaire</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Vue 3D des terrains intégrée directement -->
+                    <div class="bg-charcoal border border-gray-800 rounded-xl p-6 mb-8">
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-3">
+                            <div>
+                                <h3 class="font-heading text-xl text-offwhite">CHOISIS TON TERRAIN EN 3D</h3>
+                                <p class="text-xs text-gray-400" id="pitch-subtitle">Clique sur un terrain vert disponible pour le sélectionner</p>
+                            </div>
+                            <div class="flex gap-5 text-xs font-bold uppercase tracking-wider">
+                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-electric inline-block"></span> Disponible</span>
+                                <span class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> Utilisé</span>
+                            </div>
+                        </div>
+
+                        <div class="pitch-scene overflow-hidden" id="pitches-container">
+                            <!-- Terrain 1 -->
+                            <div class="pitch-3d pitch-available" id="pitch-1" onclick="selectPitch(1)">
+                                <div class="pitch-text">
+                                    <div class="text-lg">T1</div>
+                                    <div class="text-[10px] font-sans font-bold uppercase tracking-wider status-label">Libre</div>
+                                </div>
+                            </div>
+                            <!-- Terrain 2 -->
+                            <div class="pitch-3d pitch-occupied" id="pitch-2" onclick="selectPitch(2)">
+                                <div class="pitch-text">
+                                    <div class="text-lg">T2</div>
+                                    <div class="text-[10px] font-sans font-bold uppercase tracking-wider status-label">Occupé</div>
+                                </div>
+                            </div>
+                            <!-- Terrain 3 -->
+                            <div class="pitch-3d pitch-available" id="pitch-3" onclick="selectPitch(3)">
+                                <div class="pitch-text">
+                                    <div class="text-lg">T3</div>
+                                    <div class="text-[10px] font-sans font-bold uppercase tracking-wider status-label">Libre</div>
+                                </div>
+                            </div>
+                            <!-- Terrain 4 -->
+                            <div class="pitch-3d pitch-occupied" id="pitch-4" onclick="selectPitch(4)">
+                                <div class="pitch-text">
+                                    <div class="text-lg">T4</div>
+                                    <div class="text-[10px] font-sans font-bold uppercase tracking-wider status-label">Occupé</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Récapitulatif Dynamique -->
+                    <div class="bg-charcoal border-l-4 border-electric p-6 rounded mb-8">
+                        <h3 class="font-heading text-xl mb-4">RÉCAPITULATIF</h3>
+                        <ul class="text-gray-300 space-y-2 mb-4">
+                            <li><strong>Date :</strong> <span id="recap-date">-</span></li>
+                            <li><strong>Horaire :</strong> <span id="recap-time">-</span></li>
+                            <li><strong>Terrain :</strong> <span id="recap-pitch" class="text-electric font-bold">Non sélectionné</span></li>
+                            <li><strong>Durée :</strong> <span id="recap-duration">1 heure</span></li>
+                            <li><strong>Joueurs :</strong> <span id="recap-players">10</span></li>
+                            <li><strong>Type :</strong> <span id="recap-type">Entre amis</span></li>
+                        </ul>
+                        <div class="text-3xl font-heading text-electric border-t border-gray-700 pt-4 mt-4">
+                            Prix estimé : <span id="total-price">80</span> €
+                        </div>
+                    </div>
+
+                    <button onclick="confirmReservation()" class="w-full bg-electric text-charcoal font-heading py-4 rounded text-xl hover:bg-white transition-colors">
+                        CONTINUER VERS LA RÉSERVATION
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE MATCHS OUVERTS ================= -->
+        <section id="matchs" class="section-page py-16 px-4">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="font-heading text-4xl mb-4">REJOINDRE UN <span class="text-electric">MATCH</span></h1>
+                    <p class="text-gray-400">Trouve un match et complète une équipe.</p>
+                </div>
+
+                <div class="flex flex-wrap gap-4 mb-8 bg-gray-900 p-4 rounded-lg border border-gray-800">
+                    <select class="bg-charcoal border border-gray-700 rounded px-4 py-2 text-white focus:outline-none"><option>Date</option></select>
+                    <select class="bg-charcoal border border-gray-700 rounded px-4 py-2 text-white focus:outline-none"><option>Horaire</option></select>
+                    <select class="bg-charcoal border border-gray-700 rounded px-4 py-2 text-white focus:outline-none"><option>Niveau</option></select>
+                    <select class="bg-charcoal border border-gray-700 rounded px-4 py-2 text-white focus:outline-none"><option>Places dispo.</option></select>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 flex justify-between items-center hover:border-electric transition-colors">
+                        <div>
+                            <div class="text-electric font-bold text-lg mb-1">15 Octobre • 19:00</div>
+                            <div class="text-offwhite font-heading text-xl mb-2">Niveau Loisir</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-3xl font-heading mb-1">2 <span class="text-sm text-gray-500 font-sans">places</span></div>
+                            <div class="text-electric font-bold mb-3">8 € / ind.</div>
+                            <button class="bg-white text-charcoal font-bold px-4 py-2 rounded text-sm hover:bg-electric" onclick="openModal('Simulation de match', 'Inscription prise en compte pour le match loisir (données de démonstration).')">VOIR LE MATCH</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE ANNIVERSAIRES ================= -->
+        <section id="anniversaires" class="section-page py-16 px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="font-heading text-4xl mb-4">FORMULES <span class="text-electric">ANNIVERSAIRES</span></h1>
+                    <p class="text-gray-400">Fête ton anniversaire sur nos terrains de football à 5 à Cagnes-sur-Mer.</p>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-2xl">
+                    <div class="relative h-64 sm:h-72 w-full bg-gray-800">
+                        <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1400&q=80" alt="Fête d'anniversaire" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
+                    </div>
+                    <div class="p-8 md:p-10">
+                        <h2 class="font-heading text-3xl text-electric mb-6">OFFRE ANNIVERSAIRE ENFANTS</h2>
+                        <ul class="text-gray-300 space-y-3 mb-8 list-disc pl-5">
+                            <li>Privatisation d'un terrain de football à 5 (1h ou 1h30).</li>
+                            <li>Mise à disposition des ballons et chasubles.</li>
+                            <li>Options d'animation et espace goûter (selon disponibilités confirmées).</li>
+                        </ul>
+                        <button onclick="openModal('Demande de formule anniversaire', 'Votre demande de formule anniversaire a bien été transmise (simulation).')" class="w-full bg-electric text-charcoal font-heading py-4 rounded text-lg hover:bg-white transition-colors">DEMANDER UNE FORMULE</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE FAQ ================= -->
+        <section id="faq" class="section-page py-16 px-4">
+            <div class="max-w-3xl mx-auto">
+                <h1 class="font-heading text-4xl mb-12 text-center">INFORMATIONS <span class="text-electric">PRATIQUES</span></h1>
+                
+                <h2 class="font-heading text-2xl mb-6">QUESTIONS FRÉQUENTES</h2>
+                <div class="space-y-4">
+                    <div class="border border-gray-800 rounded bg-gray-900 overflow-hidden">
+                        <button class="w-full text-left p-4 font-bold text-offwhite hover:text-electric flex justify-between" onclick="toggleFaq(this)">
+                            Comment fonctionne l'accès autonome ? <span>+</span>
+                        </button>
+                        <div class="p-4 pt-0 text-gray-400 hidden text-sm">
+                            Système numérique de confirmation et d'accès par QR code à l'entrée.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Personnalisée -->
+    <div id="custom-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex justify-center items-center p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 md:p-8 max-w-md w-full">
+            <h3 id="modal-title" class="font-heading text-2xl text-electric mb-3">Titre</h3>
+            <p id="modal-text" class="text-gray-300 mb-6 text-sm"></p>
+            <button onclick="closeModal()" class="w-full bg-electric text-charcoal font-heading py-3 rounded font-bold hover:bg-white transition-colors">COMPRIS</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-[#0a0a0a] border-t border-gray-900 py-12 text-center text-gray-500 text-sm">
+        <div class="font-heading text-2xl font-black tracking-tighter text-gray-700 mb-4">URBAN<span class="text-gray-500">PLAY</span></div>
+        <p class="italic text-xs text-gray-600 mb-4">Prototype non commercial.</p>
+    </footer>
+
+    <!-- LOGIQUE JAVASCRIPT -->
+    <script>
+        let selectedPitch = null;
+        // Simulation dynamique des disponibilités selon l'heure choisie (true = disponible, false = utilisé)
+        const pitchAvailabilityByTime = {
+            "":       { 1: true,  2: false, 3: true,  4: false },
+            "18:00":  { 1: true,  2: true,  3: false, 4: true  },
+            "19:00":  { 1: false, 2: true,  3: true,  4: false },
+            "20:00":  { 1: true,  2: false, 3: false, 4: true  },
+            "21:00":  { 1: true,  2: true,  3: true,  4: false }
+        };
+
+        function navigate(pageId) {
+            document.querySelectorAll('.section-page').forEach(el => el.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        function onSlotChange() {
+            const time = document.getElementById('res-time').value;
+            const statusMap = pitchAvailabilityByTime[time] || pitchAvailabilityByTime[""];
+
+            for (let i = 1; i <= 4; i++) {
+                const pitchEl = document.getElementById(`pitch-${i}`);
+                const labelEl = pitchEl.querySelector('.status-label');
+                const isAvailable = statusMap[i];
+
+                pitchEl.classList.remove('pitch-available', 'pitch-occupied', 'pitch-selected');
+                if (isAvailable) {
+                    pitchEl.classList.add('pitch-available');
+                    labelEl.innerText = 'Libre';
+                } else {
+                    pitchEl.classList.add('pitch-occupied');
+                    labelEl.innerText = 'Occupé';
+                    if (selectedPitch === i) {
+                        selectedPitch = null;
+                    }
+                }
+            }
+
+            if (selectedPitch) {
+                document.getElementById(`pitch-${selectedPitch}`).classList.add('pitch-selected');
+            }
+
+            updateRecap();
+        }
+
+        function selectPitch(pitchNum) {
+            const pitchEl = document.getElementById(`pitch-${pitchNum}`);
+            if (pitchEl.classList.contains('pitch-occupied')) {
+                openModal('Terrain occupé', `Le Terrain ${pitchNum} est déjà utilisé sur ce créneau. Choisis un terrain affiché en vert.`);
+                return;
+            }
+
+            document.querySelectorAll('.pitch-3d').forEach(el => el.classList.remove('pitch-selected'));
+            pitchEl.classList.add('pitch-selected');
+            selectedPitch = pitchNum;
+            updateRecap();
+        }
+
+        function updateRecap() {
+            const date = document.getElementById('res-date').value;
+            const time = document.getElementById('res-time').value;
+            const duration = parseFloat(document.getElementById('res-duration').value);
+            const players = document.getElementById('res-players').value;
+            const type = document.getElementById('res-type');
+            
+            document.getElementById('recap-date').innerText = date ? new Date(date).toLocaleDateString('fr-FR') : '-';
+            document.getElementById('recap-time').innerText = time || '-';
+            document.getElementById('recap-pitch').innerText = selectedPitch ? `Terrain ${selectedPitch}` : 'Non sélectionné';
+            document.getElementById('recap-duration').innerText = duration === 1 ? '1 heure' : duration === 1.5 ? '1 h 30' : '2 heures';
+            document.getElementById('recap-players').innerText = players;
+            document.getElementById('recap-type').innerText = type.options[type.selectedIndex].text;
+
+            const basePrice = 80;
+            document.getElementById('total-price').innerText = basePrice * duration;
+        }
+
+        function confirmReservation() {
+            const date = document.getElementById('res-date').value;
+            const time = document.getElementById('res-time').value;
+            if (!date || !time) {
+                openModal('Attention', 'Veuillez sélectionner une date et une heure pour continuer.');
+                return;
+            }
+            if (!selectedPitch) {
+                openModal('Terrain requis', 'Clique sur l’un des terrains disponibles en vert sur le plan 3D avant de continuer.');
+                return;
+            }
+            openModal('Réservation en cours', `Simulation validée pour le Terrain ${selectedPitch}, le ${new Date(date).toLocaleDateString('fr-FR')} à ${time}. Aucun paiement réel n'est connecté sur ce prototype.`);
+        }
+
+        function openModal(title, text) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        function toggleFaq(btn) {
+            const content = btn.nextElementSibling;
+            const symbol = btn.querySelector('span');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                symbol.innerText = '-';
+            } else {
+                content.classList.add('hidden');
+                symbol.innerText = '+';
+            }
+        }
+
+        // Empêcher la sélection de dates passées
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('res-date').setAttribute('min', today);
+    </script>
+</body>
+</html>
