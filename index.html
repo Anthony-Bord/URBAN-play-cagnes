@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urban Play Cagnes | Football à 5</title>
+    <title>Urban Play Cagnes | Football à 5 — Ouvert 24h/24 & 7j/7</title>
     
     <!-- Polices -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
@@ -40,8 +40,36 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.92) translateY(16px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-popin {
+            animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Animation bandeau défilant en continu tout en haut */
+        @keyframes marqueeScroll {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+        .marquee-wrapper {
+            overflow: hidden;
+            white-space: nowrap;
+            display: flex;
+        }
+        .marquee-track {
+            display: inline-flex;
+            align-items: center;
+            animation: marqueeScroll 24s linear infinite;
+            will-change: transform;
+        }
+        .marquee-wrapper:hover .marquee-track {
+            animation-play-state: paused;
+        }
+
         .bg-hero {
-            background-image: linear-gradient(rgba(17, 17, 17, 0.6), rgba(17, 17, 17, 0.9)), url('https://images.unsplash.com/photo-1518605368461-1e1e38ce81ba?auto=format&fit=crop&w=1950&q=80');
+            background-image: linear-gradient(rgba(17, 17, 17, 0.55), rgba(17, 17, 17, 0.9)), url('https://images.unsplash.com/photo-1518605368461-1e1e38ce81ba?auto=format&fit=crop&w=1950&q=80');
             background-size: cover;
             background-position: center;
         }
@@ -142,9 +170,111 @@
 </head>
 <body class="font-sans antialiased text-offwhite bg-charcoal">
 
-    <!-- Top Bar -->
-    <div class="bg-charcoal text-offwhite text-xs py-2 text-center border-b border-gray-800 tracking-wider">
-        CAGNES-SUR-MER · FOOTBALL À 5 · ACCÈS AUTONOME
+    <!-- ================= POP-IN PROMOTIONNEL (OUVERT AU CLIC SUR LE BANDEAU) ================= -->
+    <div id="promo-popin" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] hidden flex justify-center items-center p-4" onclick="if(event.target === this) closePromoPopin()">
+        <div class="relative bg-gray-900 border-2 border-electric rounded-2xl max-w-lg w-full overflow-hidden shadow-[0_0_50px_rgba(198,255,0,0.25)] animate-popin">
+            
+            <!-- Bouton fermer (X) -->
+            <button onclick="closePromoPopin()" aria-label="Fermer l'offre promotionnelle" class="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-charcoal/85 text-offwhite hover:bg-electric hover:text-charcoal flex items-center justify-center transition-colors border border-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <!-- Visuel haut du pop-in -->
+            <div class="relative h-44 w-full bg-charcoal">
+                <img src="https://images.unsplash.com/photo-1518605368461-1e1e38ce81ba?auto=format&fit=crop&w=1000&q=80" alt="Offre de lancement Urban Play" class="w-full h-full object-cover opacity-75">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-charcoal/40 to-transparent"></div>
+                <div class="absolute top-4 left-4 bg-electric text-charcoal font-heading text-xs px-3 py-1 rounded tracking-wider">
+                    OFFRE SPÉCIALE LANCEMENT
+                </div>
+            </div>
+
+            <!-- Contenu de l'offre -->
+            <div class="p-6 sm:p-8 pt-2 text-center">
+                <h2 class="font-heading text-3xl sm:text-4xl text-white leading-tight mb-2">
+                    <span class="text-electric">-20%</span> SUR TA 1ÈRE SESSION
+                </h2>
+                <p class="text-gray-300 text-sm mb-5">
+                    Valable 24h/24 & 7j/7 sur toutes les réservations de terrain (journée & sessions nocturnes) à Cagnes-sur-Mer.
+                </p>
+
+                <!-- Encart Code Promo cliquable -->
+                <div class="bg-charcoal border border-dashed border-electric/70 rounded-xl p-3.5 mb-6 flex items-center justify-between gap-3">
+                    <div class="text-left">
+                        <span class="block text-[10px] uppercase tracking-widest text-gray-400">Code promotionnel</span>
+                        <span id="promo-code-text" class="font-heading text-xl text-electric tracking-widest">URBAN20</span>
+                    </div>
+                    <button onclick="copyPromoCode()" id="copy-promo-btn" class="bg-gray-800 hover:bg-electric hover:text-charcoal text-offwhite text-xs font-bold uppercase px-3.5 py-2 rounded transition-colors">
+                        Copier
+                    </button>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button onclick="applyPromoAndBook()" class="flex-1 bg-electric text-charcoal font-heading py-3.5 px-6 rounded text-sm sm:text-base hover:bg-white transition-colors">
+                        ACTIVER & RÉSERVER
+                    </button>
+                    <button onclick="closePromoPopin()" class="sm:w-auto border border-gray-700 text-gray-400 hover:text-white font-medium py-3.5 px-5 rounded text-xs uppercase tracking-wider transition-colors">
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= LECTEUR D'ARTICLE COMPLET (MODALE BLOG) ================= -->
+    <div id="article-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[60] hidden flex justify-center items-center p-4" onclick="if(event.target === this) closeArticleModal()">
+        <div class="relative bg-gray-900 border border-gray-700 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-popin">
+            
+            <!-- Bouton fermer (X) -->
+            <button onclick="closeArticleModal()" aria-label="Fermer l'article" class="sticky top-3 float-right mr-3 mt-3 z-20 w-9 h-9 rounded-full bg-charcoal/90 text-offwhite hover:bg-electric hover:text-charcoal flex items-center justify-center transition-colors border border-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+
+            <!-- Image de couverture -->
+            <div class="relative h-56 sm:h-64 w-full bg-gray-800 -mt-12">
+                <img id="article-modal-img" src="" alt="" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-charcoal/40 to-transparent"></div>
+                <div class="absolute bottom-4 left-6 flex items-center gap-3">
+                    <span id="article-modal-badge" class="bg-electric text-charcoal font-heading text-[10px] px-3 py-1 rounded">Catégorie</span>
+                    <span id="article-modal-meta" class="text-xs text-gray-200 font-medium">Temps de lecture</span>
+                </div>
+            </div>
+
+            <!-- Corps de l'article -->
+            <div class="p-6 sm:p-10">
+                <h2 id="article-modal-title" class="font-heading text-2xl sm:text-3xl text-white leading-tight mb-6">Titre de l'article</h2>
+                
+                <div id="article-modal-body" class="space-y-5 text-gray-300 text-sm sm:text-base leading-relaxed">
+                    <!-- Contenu injecté dynamiquement -->
+                </div>
+
+                <!-- Pied de l'article avec CTA -->
+                <div class="mt-8 pt-6 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <button onclick="closeArticleModal()" class="w-full sm:w-auto border border-gray-700 text-gray-300 hover:text-white font-heading text-xs px-5 py-3 rounded transition-colors">
+                        &larr; RETOUR AUX ARTICLES
+                    </button>
+                    <div class="flex flex-wrap gap-3 w-full sm:w-auto justify-end">
+                        <button id="article-modal-cta" onclick="closeArticleModal(); navigate('anniversaires')" class="w-full sm:w-auto bg-electric text-charcoal font-heading text-xs px-6 py-3 rounded hover:bg-white transition-colors">
+                            DÉCOUVRIR NOS FORMULES
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= BANDEAU DÉFILANT TOUT EN HAUT ================= -->
+    <div onclick="openPromoPopin()" title="Clique pour profiter de l'offre -20%" class="bg-charcoal text-offwhite text-xs py-2.5 border-b border-gray-800 tracking-wider cursor-pointer marquee-wrapper select-none hover:bg-gray-900/80 transition-colors">
+        <div class="marquee-track">
+            <span class="mx-6">CAGNES-SUR-MER · FOOTBALL À 5 · OUVERT 24H/24 & 7J/7</span>
+            <span class="text-electric font-bold mx-6">🎁 OFFRE LANCEMENT : -20% SUR TA 1ÈRE SESSION AVEC LE CODE URBAN20 (CLIQUE ICI)</span>
+            <span class="mx-6">SESSIONS NOCTURNES DE 23H À 07H · ACCÈS AUTONOME QR CODE</span>
+            <span class="text-electric font-bold mx-6">🎁 OFFRE LANCEMENT : -20% SUR TA 1ÈRE SESSION AVEC LE CODE URBAN20 (CLIQUE ICI)</span>
+            <!-- Duplication pour défilement infini fluide -->
+            <span class="mx-6">CAGNES-SUR-MER · FOOTBALL À 5 · OUVERT 24H/24 & 7J/7</span>
+            <span class="text-electric font-bold mx-6">🎁 OFFRE LANCEMENT : -20% SUR TA 1ÈRE SESSION AVEC LE CODE URBAN20 (CLIQUE ICI)</span>
+            <span class="mx-6">SESSIONS NOCTURNES DE 23H À 07H · ACCÈS AUTONOME QR CODE</span>
+            <span class="text-electric font-bold mx-6">🎁 OFFRE LANCEMENT : -20% SUR TA 1ÈRE SESSION AVEC LE CODE URBAN20 (CLIQUE ICI)</span>
+        </div>
     </div>
 
     <!-- Navigation -->
@@ -155,12 +285,13 @@
                     <span class="font-heading text-2xl font-black tracking-tighter text-offwhite">URBAN<span class="text-electric">PLAY</span></span>
                 </div>
                 
-                <div class="hidden md:flex space-x-8 items-center">
-                    <button onclick="navigate('accueil')" class="hover:text-electric transition-colors font-medium">Accueil</button>
-                    <button onclick="navigate('matchs')" class="hover:text-electric transition-colors font-medium">Matchs Ouverts</button>
-                    <button onclick="navigate('anniversaires')" class="hover:text-electric transition-colors font-medium">Anniversaires</button>
-                    <button onclick="navigate('faq')" class="hover:text-electric transition-colors font-medium">Infos Pratiques</button>
-                    <button onclick="navigate('reservation')" class="bg-electric text-charcoal font-heading px-6 py-3 rounded hover:bg-white transition-colors">RÉSERVER</button>
+                <div class="hidden md:flex space-x-6 lg:space-x-8 items-center">
+                    <button onclick="navigate('accueil')" class="hover:text-electric transition-colors font-medium text-sm">Accueil</button>
+                    <button onclick="navigate('matchs')" class="hover:text-electric transition-colors font-medium text-sm">Matchs Ouverts</button>
+                    <button onclick="navigate('anniversaires')" class="hover:text-electric transition-colors font-medium text-sm">Anniversaires</button>
+                    <button onclick="navigate('faq')" class="hover:text-electric transition-colors font-medium text-sm">Infos Pratiques</button>
+                    <button onclick="navigate('blog')" class="hover:text-electric transition-colors font-medium text-sm">Blog</button>
+                    <button onclick="navigate('reservation')" class="bg-electric text-charcoal font-heading px-5 py-2.5 rounded hover:bg-white transition-colors text-sm">RÉSERVER</button>
                 </div>
 
                 <!-- Menu Mobile -->
@@ -178,6 +309,7 @@
             <button onclick="navigate('matchs'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-electric font-medium">Matchs Ouverts</button>
             <button onclick="navigate('anniversaires'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-electric font-medium">Anniversaires</button>
             <button onclick="navigate('faq'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-electric font-medium">Infos Pratiques</button>
+            <button onclick="navigate('blog'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-electric font-medium">Blog</button>
         </div>
     </nav>
 
@@ -188,26 +320,30 @@
         <section id="accueil" class="section-page active">
             <!-- Hero -->
             <div class="bg-hero h-[80vh] flex flex-col justify-center items-center text-center px-4">
+                <div class="inline-flex items-center gap-2 bg-charcoal/85 border border-electric/50 text-electric text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-6">
+                    <span class="w-2 h-2 rounded-full bg-electric animate-pulse"></span>
+                    Ouvert 24h/24 & 7j/7 · Sessions Jour & Nocturnes
+                </div>
                 <h1 class="font-heading text-5xl md:text-7xl font-black mb-6 tracking-tight text-white leading-tight">
                     LE TERRAIN <br><span class="text-electric">T'ATTEND.</span>
                 </h1>
                 <p class="max-w-2xl text-lg md:text-xl mb-10 text-gray-200">
-                    Réunis ton équipe, choisis ton créneau et place le match au cœur de ton agenda. Le football à cinq, version urbaine.
+                    De jour comme au milieu de la nuit, réunis ton équipe et joue en totale autonomie à Cagnes-sur-Mer.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4">
                     <button onclick="navigate('reservation')" class="bg-electric text-charcoal font-heading text-lg px-8 py-4 rounded hover:bg-white transition-all transform hover:scale-105">
                         TROUVER UN CRÉNEAU
                     </button>
                     <button onclick="navigate('matchs')" class="border-2 border-offwhite text-offwhite font-heading text-lg px-8 py-4 rounded hover:bg-offwhite hover:text-charcoal transition-colors">
-                        DÉCOUVRIR LE CONCEPT
+                        MATCHS OUVERTS
                     </button>
                 </div>
             </div>
 
             <!-- Bandeau -->
             <div class="bg-electric text-charcoal py-4 overflow-hidden whitespace-nowrap">
-                <div class="font-heading text-2xl font-black tracking-widest text-center">
-                    TON MATCH. TON ÉQUIPE. TON HEURE. · TON MATCH. TON ÉQUIPE. TON HEURE.
+                <div class="font-heading text-xl md:text-2xl font-black tracking-widest text-center">
+                    OUVERT 24H/24 · 7J/7 · SESSIONS NOCTURNES DISPONIBLES · ACCÈS AUTONOME
                 </div>
             </div>
 
@@ -220,10 +356,11 @@
                     <div class="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-electric transition-colors group cursor-pointer" onclick="navigate('reservation')">
                         <div class="relative h-56 w-full bg-gray-800 overflow-hidden">
                             <img src="https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=900&q=80" alt="Location de terrain de football à 5" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <span class="absolute top-3 right-3 bg-charcoal/90 text-electric text-[11px] font-bold uppercase px-3 py-1 rounded border border-electric/40">24h/24 · 7j/7</span>
                         </div>
                         <div class="p-6">
                             <h3 class="font-heading text-2xl mb-3 text-electric">LOCATION DE TERRAIN</h3>
-                            <p class="text-gray-400 mb-4">Choisis une date, un horaire et réserve un terrain pour jouer entre amis.</p>
+                            <p class="text-gray-400 mb-4">Réserve ton terrain à n'importe quelle heure du jour ou de la nuit, même après minuit.</p>
                             <span class="font-bold uppercase text-sm tracking-wider group-hover:text-electric transition-colors">Réserver &rarr;</span>
                         </div>
                     </div>
@@ -235,27 +372,28 @@
                         </div>
                         <div class="p-6">
                             <h3 class="font-heading text-2xl mb-3 text-electric">REJOINDRE UN MATCH</h3>
-                            <p class="text-gray-400 mb-4">Joueurs individuels, trouvez un match et complétez une équipe ouverte.</p>
+                            <p class="text-gray-400 mb-4">Joueurs individuels, rejoignez un match en journée ou une session nocturne.</p>
                             <span class="font-bold uppercase text-sm tracking-wider group-hover:text-electric transition-colors">Voir les matchs &rarr;</span>
                         </div>
                     </div>
 
-                    <!-- Carte 3 : Anniversaires avec vraie photo de fête d'anniversaire -->
+                    <!-- Carte 3 : Anniversaires -->
                     <div class="bg-gray-900 rounded-lg overflow-hidden border border-gray-800 hover:border-electric transition-colors group cursor-pointer" onclick="navigate('anniversaires')">
                         <div class="relative h-56 w-full bg-gray-800 overflow-hidden">
                             <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=900&q=80" alt="Fête d'anniversaire" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <span class="absolute top-3 right-3 bg-electric text-charcoal text-[11px] font-bold uppercase px-3 py-1 rounded">4 Formules</span>
                         </div>
                         <div class="p-6">
                             <h3 class="font-heading text-2xl mb-3 text-electric">ANNIVERSAIRES</h3>
-                            <p class="text-gray-400 mb-4">Organise des anniversaires sportifs pour enfants et adolescents sur nos terrains.</p>
-                            <span class="font-bold uppercase text-sm tracking-wider group-hover:text-electric transition-colors">Découvrir &rarr;</span>
+                            <p class="text-gray-400 mb-4">Découvre nos 4 formules anniversaires clés en main pour enfants et ados.</p>
+                            <span class="font-bold uppercase text-sm tracking-wider group-hover:text-electric transition-colors">Voir les formules &rarr;</span>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ================= PAGE RÉSERVATION + IMAGE + PLAN 3D ================= -->
+        <!-- ================= PAGE RÉSERVATION + SESSIONS 24H/24 + CODE PROMO + PLAN 3D ================= -->
         <section id="reservation" class="section-page py-16 px-4">
             <div class="max-w-4xl mx-auto bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-2xl">
                 
@@ -263,7 +401,7 @@
                 <div class="relative h-56 sm:h-64 w-full bg-gray-800">
                     <img src="https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=1600&q=80" alt="Terrains de football à 5 Urban Play Cagnes" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-charcoal/50 to-transparent flex flex-col justify-end p-6 md:px-12">
-                        <span class="text-electric font-bold text-xs uppercase tracking-widest mb-1">4 Terrains Indoor & Outdoor · Pelouse Dernière Génération</span>
+                        <span class="text-electric font-bold text-xs uppercase tracking-widest mb-1">Ouvert 24h/24 & 7j/7 · Sessions Journée & Nocturnes</span>
                         <h1 class="font-heading text-3xl sm:text-4xl text-white"><span class="text-electric">LOCATION</span> DE TERRAIN</h1>
                     </div>
                 </div>
@@ -272,17 +410,37 @@
                     <!-- Paramètres du créneau -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Date souhaitée</label>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Date souhaitée (7j/7)</label>
                             <input type="date" id="res-date" class="w-full bg-charcoal border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-electric" onchange="onSlotChange()">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Heure de début</label>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Heure de début (24h/24)</label>
                             <select id="res-time" class="w-full bg-charcoal border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-electric" onchange="onSlotChange()">
-                                <option value="">Choisir un horaire</option>
-                                <option value="18:00">18:00</option>
-                                <option value="19:00">19:00</option>
-                                <option value="20:00">20:00</option>
-                                <option value="21:00">21:00</option>
+                                <option value="">Choisir un horaire (Jour ou Nuit)</option>
+                                <optgroup label="Sessions Matin & Journée">
+                                    <option value="08:00">08:00 — Matin</option>
+                                    <option value="10:00">10:00 — Matin</option>
+                                    <option value="12:00">12:00 — Pause Midi</option>
+                                    <option value="14:00">14:00 — Après-midi</option>
+                                    <option value="16:00">16:00 — Après-midi</option>
+                                </optgroup>
+                                <optgroup label="Sessions Soirée (Prime)">
+                                    <option value="18:00">18:00 — Soirée</option>
+                                    <option value="19:00">19:00 — Soirée</option>
+                                    <option value="20:00">20:00 — Soirée</option>
+                                    <option value="21:00">21:00 — Soirée</option>
+                                    <option value="22:00">22:00 — Soirée</option>
+                                </optgroup>
+                                <optgroup label="Sessions Nocturnes (23h — 07h)">
+                                    <option value="23:00">23:00 — Session Nocturne</option>
+                                    <option value="00:00">00:00 — Session Nocturne</option>
+                                    <option value="01:00">01:00 — Session Nocturne</option>
+                                    <option value="02:00">02:00 — Session Nocturne</option>
+                                    <option value="03:00">03:00 — Session Nocturne</option>
+                                    <option value="04:00">04:00 — Session Nocturne</option>
+                                    <option value="05:00">05:00 — Session Nocturne</option>
+                                    <option value="06:00">06:00 — Session Nocturne</option>
+                                </optgroup>
                             </select>
                         </div>
                         <div>
@@ -296,17 +454,36 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-400 mb-2">Nombre de joueurs</label>
                             <select id="res-players" class="w-full bg-charcoal border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-electric" onchange="updateRecap()">
-                                <option value="10">10 joueurs</option>
-                                <option value="12">12 joueurs</option>
+                                <option value="10">10 joueurs (5 vs 5)</option>
+                                <option value="12">12 joueurs (avec remplaçants)</option>
                                 <option value="14">14 joueurs</option>
                             </select>
                         </div>
-                        <div class="md:col-span-2">
+                        <div>
                             <label class="block text-sm font-medium text-gray-400 mb-2">Type de réservation</label>
                             <select id="res-type" class="w-full bg-charcoal border border-gray-700 rounded px-4 py-3 text-white focus:outline-none focus:border-electric" onchange="updateRecap()">
                                 <option value="amis">Entre amis</option>
+                                <option value="nocturne">Session Nocturne (23h — 07h)</option>
                                 <option value="anniversaire">Anniversaire</option>
                             </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Code promotionnel</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="res-promo" placeholder="Ex: URBAN20" class="w-full bg-charcoal border border-gray-700 rounded px-4 py-3 text-white uppercase focus:outline-none focus:border-electric" oninput="updateRecap()">
+                                <button type="button" onclick="updateRecap()" class="bg-gray-800 hover:bg-electric hover:text-charcoal text-xs font-bold uppercase px-4 rounded transition-colors">OK</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Encart Info Session Nocturne -->
+                    <div id="night-badge" class="hidden bg-indigo-950/60 border border-indigo-500/40 rounded-lg p-4 mb-8 flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🌙</span>
+                            <div>
+                                <div class="font-heading text-sm text-electric">SESSION NOCTURNE ACTIVE (23H00 — 07H00)</div>
+                                <p class="text-xs text-gray-300">Éclairage LED automatique déclenché à ton arrivée par QR code · Tarif réduit de nuit appliqué (70 €/h).</p>
+                            </div>
                         </div>
                     </div>
 
@@ -361,13 +538,16 @@
                         <ul class="text-gray-300 space-y-2 mb-4">
                             <li><strong>Date :</strong> <span id="recap-date">-</span></li>
                             <li><strong>Horaire :</strong> <span id="recap-time">-</span></li>
+                            <li><strong>Créneau :</strong> <span id="recap-period" class="text-gray-300">Journée / Soirée</span></li>
                             <li><strong>Terrain :</strong> <span id="recap-pitch" class="text-electric font-bold">Non sélectionné</span></li>
                             <li><strong>Durée :</strong> <span id="recap-duration">1 heure</span></li>
                             <li><strong>Joueurs :</strong> <span id="recap-players">10</span></li>
                             <li><strong>Type :</strong> <span id="recap-type">Entre amis</span></li>
+                            <li id="recap-promo-row" class="hidden text-electric font-bold"><strong>Offre appliquée :</strong> Code URBAN20 (-20%)</li>
                         </ul>
-                        <div class="text-3xl font-heading text-electric border-t border-gray-700 pt-4 mt-4">
-                            Prix estimé : <span id="total-price">80</span> €
+                        <div class="text-3xl font-heading text-electric border-t border-gray-700 pt-4 mt-4 flex items-baseline gap-3">
+                            <span>Prix estimé : <span id="total-price">80</span> €</span>
+                            <span id="old-price" class="hidden text-lg text-gray-500 line-through">80 €</span>
                         </div>
                     </div>
 
@@ -378,64 +558,189 @@
             </div>
         </section>
 
-        <!-- ================= PAGE MATCHS OUVERTS ================= -->
+        <!-- ================= PAGE MATCHS OUVERTS (AVEC NOCTURNES) ================= -->
         <section id="matchs" class="section-page py-16 px-4">
             <div class="max-w-5xl mx-auto">
                 <div class="text-center mb-12">
                     <h1 class="font-heading text-4xl mb-4">REJOINDRE UN <span class="text-electric">MATCH</span></h1>
-                    <p class="text-gray-400">Trouve un match et complète une équipe.</p>
-                </div>
-
-                <div class="flex flex-wrap gap-4 mb-8 bg-gray-900 p-4 rounded-lg border border-gray-800">
-                    <select class="bg-charcoal border border-gray-700 rounded px-4 py-2 text-white focus:outline-none"><option>Date</option></select>
-                    <select class="bg-charcoal border border-gray-700 rounded px-4 py-2 text-white focus:outline-none"><option>Horaire</option></select>
-                    <select class="bg-charcoal border border-gray-700 rounded px-4 py-2 text-white focus:outline-none"><option>Niveau</option></select>
-                    <select class="bg-charcoal border border-gray-700 rounded px-4 py-2 text-white focus:outline-none"><option>Places dispo.</option></select>
+                    <p class="text-gray-400">Sessions de journée, soirée ou nocturnes 24h/24 — complète une équipe ouverte.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Match Soirée -->
                     <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 flex justify-between items-center hover:border-electric transition-colors">
                         <div>
-                            <div class="text-electric font-bold text-lg mb-1">15 Octobre • 19:00</div>
-                            <div class="text-offwhite font-heading text-xl mb-2">Niveau Loisir</div>
+                            <div class="text-electric font-bold text-sm uppercase tracking-wider mb-1">Ce soir • 19:00</div>
+                            <div class="text-offwhite font-heading text-xl mb-1">Niveau Loisir</div>
+                            <div class="text-xs text-gray-400">Terrain 1 · 5 vs 5</div>
                         </div>
                         <div class="text-right">
                             <div class="text-3xl font-heading mb-1">2 <span class="text-sm text-gray-500 font-sans">places</span></div>
                             <div class="text-electric font-bold mb-3">8 € / ind.</div>
-                            <button class="bg-white text-charcoal font-bold px-4 py-2 rounded text-sm hover:bg-electric" onclick="openModal('Simulation de match', 'Inscription prise en compte pour le match loisir (données de démonstration).')">VOIR LE MATCH</button>
+                            <button class="bg-white text-charcoal font-bold px-4 py-2 rounded text-sm hover:bg-electric transition-colors" onclick="openModal('Match Soirée (19:00)', 'Inscription prise en compte pour le match loisir de 19h00 (simulation).')">REJOINDRE</button>
+                        </div>
+                    </div>
+
+                    <!-- Match Nocturne 1 -->
+                    <div class="bg-gray-900 border border-indigo-500/40 rounded-lg p-6 flex justify-between items-center hover:border-electric transition-colors">
+                        <div>
+                            <div class="inline-block bg-indigo-950 text-electric text-[10px] font-bold uppercase px-2 py-0.5 rounded mb-2">🌙 Session Nocturne</div>
+                            <div class="text-electric font-bold text-sm uppercase tracking-wider mb-1">Cette nuit • 00:30</div>
+                            <div class="text-offwhite font-heading text-xl mb-1">Tous Niveaux</div>
+                            <div class="text-xs text-gray-400">Terrain 3 · Accès QR Code</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-3xl font-heading mb-1">3 <span class="text-sm text-gray-500 font-sans">places</span></div>
+                            <div class="text-electric font-bold mb-3">7 € / ind.</div>
+                            <button class="bg-electric text-charcoal font-bold px-4 py-2 rounded text-sm hover:bg-white transition-colors" onclick="openModal('Session Nocturne (00:30)', 'Inscription enregistrée pour la session nocturne de 00h30 (simulation).')">REJOINDRE</button>
+                        </div>
+                    </div>
+
+                    <!-- Match Nocturne 2 -->
+                    <div class="bg-gray-900 border border-indigo-500/40 rounded-lg p-6 flex justify-between items-center hover:border-electric transition-colors">
+                        <div>
+                            <div class="inline-block bg-indigo-950 text-electric text-[10px] font-bold uppercase px-2 py-0.5 rounded mb-2">🌙 Session Nocturne</div>
+                            <div class="text-electric font-bold text-sm uppercase tracking-wider mb-1">Demain • 02:00</div>
+                            <div class="text-offwhite font-heading text-xl mb-1">Niveau Intermédiaire</div>
+                            <div class="text-xs text-gray-400">Terrain 2 · Accès QR Code</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-3xl font-heading mb-1">1 <span class="text-sm text-gray-500 font-sans">place</span></div>
+                            <div class="text-electric font-bold mb-3">7 € / ind.</div>
+                            <button class="bg-electric text-charcoal font-bold px-4 py-2 rounded text-sm hover:bg-white transition-colors" onclick="openModal('Session Nocturne (02:00)', 'Inscription enregistrée pour la session nocturne de 02h00 (simulation).')">REJOINDRE</button>
+                        </div>
+                    </div>
+
+                    <!-- Match Matinal -->
+                    <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 flex justify-between items-center hover:border-electric transition-colors">
+                        <div>
+                            <div class="text-electric font-bold text-sm uppercase tracking-wider mb-1">Demain • 09:30</div>
+                            <div class="text-offwhite font-heading text-xl mb-1">Réveil Sportif</div>
+                            <div class="text-xs text-gray-400">Terrain 1 · 5 vs 5</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-3xl font-heading mb-1">4 <span class="text-sm text-gray-500 font-sans">places</span></div>
+                            <div class="text-electric font-bold mb-3">8 € / ind.</div>
+                            <button class="bg-white text-charcoal font-bold px-4 py-2 rounded text-sm hover:bg-electric transition-colors" onclick="openModal('Match Matinal (09:30)', 'Inscription prise en compte pour le match de 09h30 (simulation).')">REJOINDRE</button>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ================= PAGE ANNIVERSAIRES ================= -->
+        <!-- ================= PAGE ANNIVERSAIRES (4 FORMULES) ================= -->
         <section id="anniversaires" class="section-page py-16 px-4">
-            <div class="max-w-4xl mx-auto">
+            <div class="max-w-6xl mx-auto">
                 <div class="text-center mb-12">
-                    <h1 class="font-heading text-4xl mb-4">FORMULES <span class="text-electric">ANNIVERSAIRES</span></h1>
-                    <p class="text-gray-400">Fête ton anniversaire sur nos terrains de football à 5 à Cagnes-sur-Mer.</p>
+                    <span class="text-electric font-bold text-xs uppercase tracking-widest">Enfants & Ados (6 à 17 ans)</span>
+                    <h1 class="font-heading text-4xl md:text-5xl mt-2 mb-4">NOS 4 FORMULES <span class="text-electric">ANNIVERSAIRES</span></h1>
+                    <p class="text-gray-400 max-w-2xl mx-auto">Fête ton anniversaire sur nos terrains de football à 5 à Cagnes-sur-Mer avec des formules adaptées à chaque envie.</p>
                 </div>
 
-                <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-2xl">
-                    <div class="relative h-64 sm:h-72 w-full bg-gray-800">
-                        <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1400&q=80" alt="Fête d'anniversaire" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
+                <!-- Bannière photo anniversaire -->
+                <div class="relative h-64 sm:h-72 w-full bg-gray-800 rounded-xl overflow-hidden mb-12 border border-gray-800">
+                    <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1400&q=80" alt="Fête d'anniversaire Urban Play" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/40 to-transparent flex flex-col justify-end p-6 md:p-10">
+                        <h2 class="font-heading text-2xl sm:text-3xl text-white">UN ANNIVERSAIRE <span class="text-electric">100% FOOT</span></h2>
+                        <p class="text-gray-300 text-sm">Jusqu'à 12 enfants par terrain · Ballons, chasubles et espace goûter inclus selon la formule</p>
                     </div>
-                    <div class="p-8 md:p-10">
-                        <h2 class="font-heading text-3xl text-electric mb-6">OFFRE ANNIVERSAIRE ENFANTS</h2>
-                        <ul class="text-gray-300 space-y-3 mb-8 list-disc pl-5">
-                            <li>Privatisation d'un terrain de football à 5 (1h ou 1h30).</li>
-                            <li>Mise à disposition des ballons et chasubles.</li>
-                            <li>Options d'animation et espace goûter (selon disponibilités confirmées).</li>
-                        </ul>
-                        <button onclick="openModal('Demande de formule anniversaire', 'Votre demande de formule anniversaire a bien été transmise (simulation).')" class="w-full bg-electric text-charcoal font-heading py-4 rounded text-lg hover:bg-white transition-colors">DEMANDER UNE FORMULE</button>
+                </div>
+
+                <!-- Grille des 4 Formules Anniversaires -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    <!-- Formule 1 : Kick-Off -->
+                    <div class="bg-gray-900 border border-gray-800 rounded-xl p-8 flex flex-col justify-between hover:border-electric transition-colors">
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="bg-gray-800 text-gray-300 text-xs font-bold uppercase px-3 py-1 rounded">Formule 1 · Essentielle</span>
+                                <span class="font-heading text-3xl text-electric">120 €</span>
+                            </div>
+                            <h3 class="font-heading text-2xl text-white mb-2">PACK KICK-OFF (1H)</h3>
+                            <p class="text-gray-400 text-sm mb-6">L'essentiel pour un match entre copains suivi du goûter.</p>
+                            <ul class="text-gray-300 text-sm space-y-3 mb-8">
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> 1h de location d'un terrain de foot à 5 (jusqu'à 10 joueurs)</li>
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> Prêt des ballons et chasubles de match</li>
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> Table réservée 30 min dans l'espace goûter (gâteau apporté par les parents)</li>
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> Cartons d'invitation numériques à télécharger</li>
+                            </ul>
+                        </div>
+                        <button onclick="openModal('Réservation — Pack Kick-Off (120 €)', 'Votre demande pour le Pack Kick-Off a bien été prise en compte. Notre équipe vous recontacte sous 24h pour confirmer le créneau.')" class="w-full border-2 border-electric text-electric font-heading py-3 rounded hover:bg-electric hover:text-charcoal transition-colors">
+                            CHOISIR LE PACK KICK-OFF
+                        </button>
                     </div>
+
+                    <!-- Formule 2 : Champions (Populaire) -->
+                    <div class="bg-gray-900 border-2 border-electric rounded-xl p-8 flex flex-col justify-between relative shadow-xl">
+                        <div class="absolute -top-3.5 right-6 bg-electric text-charcoal font-heading text-xs px-3 py-1 rounded">
+                            LA PLUS DEMANDÉE
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="bg-electric/15 text-electric text-xs font-bold uppercase px-3 py-1 rounded">Formule 2 · Tout Compris</span>
+                                <span class="font-heading text-3xl text-electric">180 €</span>
+                            </div>
+                            <h3 class="font-heading text-2xl text-white mb-2">PACK CHAMPIONS (1H30)</h3>
+                            <p class="text-gray-400 text-sm mb-6">La formule complète avec goûter inclus et remise de médailles.</p>
+                            <ul class="text-gray-300 text-sm space-y-3 mb-8">
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> 1h30 de terrain privatisé (jusqu'à 12 joueurs)</li>
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> Goûter complet inclus : gâteau d'anniversaire, bonbons & boissons</li>
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> Espace anniversaire décoré pendant 45 min</li>
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> 1 médaille offerte à chaque participant + trophée pour l'enfant fêté</li>
+                            </ul>
+                        </div>
+                        <button onclick="openModal('Réservation — Pack Champions (180 €)', 'Votre demande pour le Pack Champions a bien été enregistrée. Nous vous confirmons les disponibilités sous 24h.')" class="w-full bg-electric text-charcoal font-heading py-3 rounded hover:bg-white transition-colors">
+                            CHOISIR LE PACK CHAMPIONS
+                        </button>
+                    </div>
+
+                    <!-- Formule 3 : Ballon d'Or avec Coach -->
+                    <div class="bg-gray-900 border border-gray-800 rounded-xl p-8 flex flex-col justify-between hover:border-electric transition-colors">
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="bg-gray-800 text-gray-300 text-xs font-bold uppercase px-3 py-1 rounded">Formule 3 · Avec Animateur</span>
+                                <span class="font-heading text-3xl text-electric">240 €</span>
+                            </div>
+                            <h3 class="font-heading text-2xl text-white mb-2">PACK BALLON D'OR (2H)</h3>
+                            <p class="text-gray-400 text-sm mb-6">Un éducateur dédié organise un vrai mini-tournoi et des défis techniques.</p>
+                            <ul class="text-gray-300 text-sm space-y-3 mb-8">
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> 2h sur terrain (1h30 de tournoi encadré par un animateur + 30 min goûter)</li>
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> Défis tirs au but, radar de vitesse et mini-tournoi coupe du monde</li>
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> Goûter complet inclus (gâteau personnalisé, boissons, friandises)</li>
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> Maillot dédicacé par tous les copains offert au roi de la fête</li>
+                            </ul>
+                        </div>
+                        <button onclick="openModal('Réservation — Pack Ballon d'Or (240 €)', 'Votre demande pour le Pack Ballon d'Or avec animateur a bien été transmise.')" class="w-full border-2 border-electric text-electric font-heading py-3 rounded hover:bg-electric hover:text-charcoal transition-colors">
+                            CHOISIR LE PACK BALLON D'OR
+                        </button>
+                    </div>
+
+                    <!-- Formule 4 : Nocturne Ados -->
+                    <div class="bg-gray-900 border border-indigo-500/40 rounded-xl p-8 flex flex-col justify-between hover:border-electric transition-colors">
+                        <div>
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="bg-indigo-950 text-electric text-xs font-bold uppercase px-3 py-1 rounded">Formule 4 · Spécial Ados (13-17 ans)</span>
+                                <span class="font-heading text-3xl text-electric">195 €</span>
+                            </div>
+                            <h3 class="font-heading text-2xl text-white mb-2">PACK NIGHT LEAGUE (2H)</h3>
+                            <p class="text-gray-400 text-sm mb-6">Une session nocturne en musique avec ambiance lumière et pizzas entre potes.</p>
+                            <ul class="text-gray-300 text-sm space-y-3 mb-8">
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> 2h de terrain en créneau soirée/nocturne (dès 20h00, jusqu'à 14 joueurs)</li>
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> Playlist musicale personnalisée au bord du terrain</li>
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> Formule Pizza & Boissons fraîches après le match</li>
+                                <li class="flex items-center gap-2"><span class="text-electric font-bold">✓</span> Photo souvenir d'équipe officielle Urban Play</li>
+                            </ul>
+                        </div>
+                        <button onclick="openModal('Réservation — Pack Night League (195 €)', 'Votre demande pour le Pack Night League (ados) a bien été transmise.')" class="w-full border-2 border-electric text-electric font-heading py-3 rounded hover:bg-electric hover:text-charcoal transition-colors">
+                            CHOISIR LE PACK NIGHT LEAGUE
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </section>
 
-        <!-- ================= PAGE FAQ ================= -->
+        <!-- ================= PAGE INFOS PRATIQUES / FAQ ================= -->
         <section id="faq" class="section-page py-16 px-4">
             <div class="max-w-3xl mx-auto">
                 <h1 class="font-heading text-4xl mb-12 text-center">INFORMATIONS <span class="text-electric">PRATIQUES</span></h1>
@@ -444,11 +749,190 @@
                 <div class="space-y-4">
                     <div class="border border-gray-800 rounded bg-gray-900 overflow-hidden">
                         <button class="w-full text-left p-4 font-bold text-offwhite hover:text-electric flex justify-between" onclick="toggleFaq(this)">
-                            Comment fonctionne l'accès autonome ? <span>+</span>
+                            Êtes-vous vraiment ouverts 24h/24 et 7j/7 ? <span>+</span>
                         </button>
                         <div class="p-4 pt-0 text-gray-400 hidden text-sm">
-                            Système numérique de confirmation et d'accès par QR code à l'entrée.
+                            Oui, nos terrains à Cagnes-sur-Mer sont accessibles 24h/24 et 7j/7, y compris la nuit (de 23h00 à 07h00), les week-ends et les jours fériés grâce à notre système d'accès autonome.
                         </div>
+                    </div>
+                    <div class="border border-gray-800 rounded bg-gray-900 overflow-hidden">
+                        <button class="w-full text-left p-4 font-bold text-offwhite hover:text-electric flex justify-between" onclick="toggleFaq(this)">
+                            Comment fonctionne l'accès autonome la nuit ? <span>+</span>
+                        </button>
+                        <div class="p-4 pt-0 text-gray-400 hidden text-sm">
+                            Dès ta réservation confirmée, tu reçois un QR code personnel sur ton téléphone. Il déverrouille le portail et active automatiquement l'éclairage LED de ton terrain 10 minutes avant le début de ton créneau.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PAGE BLOG : FIVE SOCCER & ANNIVERSAIRE ENFANT ================= -->
+        <section id="blog" class="section-page py-16 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <span class="text-electric font-bold text-xs uppercase tracking-widest">Conseils, Idées & Guides Parents</span>
+                    <h1 class="font-heading text-4xl md:text-5xl mt-2 mb-4">LE <span class="text-electric">BLOG</span> FIVE & ANNIVERSAIRES</h1>
+                    <p class="text-gray-400 max-w-2xl mx-auto">Tout savoir pour organiser un anniversaire foot enfant réussi, découvrir les bienfaits du Five Soccer et préparer un match inoubliable.</p>
+                </div>
+
+                <!-- Filtres thématiques -->
+                <div class="flex flex-wrap justify-center gap-3 mb-12" id="blog-filters">
+                    <button onclick="filterBlog('all', this)" class="blog-filter-btn bg-electric text-charcoal font-heading text-xs px-4 py-2 rounded">TOUS LES ARTICLES</button>
+                    <button onclick="filterBlog('anniversaire', this)" class="blog-filter-btn bg-gray-900 border border-gray-700 text-offwhite hover:border-electric font-heading text-xs px-4 py-2 rounded transition-colors">ANNIVERSAIRE ENFANT</button>
+                    <button onclick="filterBlog('five', this)" class="blog-filter-btn bg-gray-900 border border-gray-700 text-offwhite hover:border-electric font-heading text-xs px-4 py-2 rounded transition-colors">FIVE SOCCER (5 VS 5)</button>
+                </div>
+
+                <!-- Grille d'articles (chaque carte entière est cliquable) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="blog-grid">
+
+                    <!-- Article 1 -->
+                    <article data-category="anniversaire" onclick="openArticle('anniversaire-parfait')" class="blog-card bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col justify-between hover:border-electric transition-all cursor-pointer group">
+                        <div>
+                            <div class="relative h-48 w-full bg-gray-800 overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=900&q=80" alt="Organiser un anniversaire foot enfant" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <span class="absolute top-3 left-3 bg-electric text-charcoal font-heading text-[10px] px-2.5 py-1 rounded">Anniversaire Enfant</span>
+                            </div>
+                            <div class="p-6">
+                                <div class="text-xs text-gray-400 mb-2">6 à 12 ans · 4 min de lecture</div>
+                                <h2 class="font-heading text-xl text-white mb-3 group-hover:text-electric transition-colors">COMMENT ORGANISER L'ANNIVERSAIRE FOOT PARFAIT POUR SON ENFANT ?</h2>
+                                <p class="text-gray-400 text-sm leading-relaxed">
+                                    Envoyer les cartons d'invitation 3 semaines à l'avance, prévoir des tenues adaptées et alterner matchs rapides, défis tirs au but et temps du goûter : le guide complet pour les parents.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="px-6 pb-6">
+                            <span class="text-electric font-bold text-xs uppercase tracking-wider group-hover:underline">
+                                Lire l'article complet &rarr;
+                            </span>
+                        </div>
+                    </article>
+
+                    <!-- Article 2 -->
+                    <article data-category="five" onclick="openArticle('bienfaits-five')" class="blog-card bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col justify-between hover:border-electric transition-all cursor-pointer group">
+                        <div>
+                            <div class="relative h-48 w-full bg-gray-800 overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=900&q=80" alt="Bienfaits du Five Soccer" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <span class="absolute top-3 left-3 bg-charcoal/90 text-electric border border-electric/40 font-heading text-[10px] px-2.5 py-1 rounded">Five Soccer</span>
+                            </div>
+                            <div class="p-6">
+                                <div class="text-xs text-gray-400 mb-2">Technique & Rythme · 3 min de lecture</div>
+                                <h2 class="font-heading text-xl text-white mb-3 group-hover:text-electric transition-colors">POURQUOI LE FIVE SOCCER EST IDÉAL POUR LES JEUNES JOUEURS ?</h2>
+                                <p class="text-gray-400 text-sm leading-relaxed">
+                                    Sur un terrain réduit à 5 contre 5, chaque enfant touche beaucoup plus le ballon qu'à 11. Les prises de décision sont rapides et l'esprit d'équipe se développe naturellement.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="px-6 pb-6">
+                            <span class="text-electric font-bold text-xs uppercase tracking-wider group-hover:underline">
+                                Lire l'article complet &rarr;
+                            </span>
+                        </div>
+                    </article>
+
+                    <!-- Article 3 -->
+                    <article data-category="anniversaire" onclick="openArticle('idees-jeux')" class="blog-card bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col justify-between hover:border-electric transition-all cursor-pointer group">
+                        <div>
+                            <div class="relative h-48 w-full bg-gray-800 overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1526232761682-d26e03ac148e?auto=format&fit=crop&w=900&q=80" alt="Mini-tournoi et jeux foot anniversaire" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <span class="absolute top-3 left-3 bg-electric text-charcoal font-heading text-[10px] px-2.5 py-1 rounded">Anniversaire Enfant</span>
+                            </div>
+                            <div class="p-6">
+                                <div class="text-xs text-gray-400 mb-2">Animation · 4 min de lecture</div>
+                                <h2 class="font-heading text-xl text-white mb-3 group-hover:text-electric transition-colors">5 IDÉES DE JEUX & MINI-TOURNOIS POUR UN ANNIVERSAIRE FOOT</h2>
+                                <p class="text-gray-400 text-sm leading-relaxed">
+                                    Coupe du monde express en 4 équipes, concours de précision sur la barre transversale, défis tirs au but ou match enfants contre parents : des formats ludiques garantis.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="px-6 pb-6">
+                            <span class="text-electric font-bold text-xs uppercase tracking-wider group-hover:underline">
+                                Lire l'article complet &rarr;
+                            </span>
+                        </div>
+                    </article>
+
+                    <!-- Article 4 -->
+                    <article data-category="five" onclick="openArticle('equipement-five')" class="blog-card bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col justify-between hover:border-electric transition-all cursor-pointer group">
+                        <div>
+                            <div class="relative h-48 w-full bg-gray-800 overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1518605368461-1e1e38ce81ba?auto=format&fit=crop&w=900&q=80" alt="Équipement pour jouer au foot à 5" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <span class="absolute top-3 left-3 bg-charcoal/90 text-electric border border-electric/40 font-heading text-[10px] px-2.5 py-1 rounded">Five Soccer</span>
+                            </div>
+                            <div class="p-6">
+                                <div class="text-xs text-gray-400 mb-2">Équipement & Sécurité · 3 min de lecture</div>
+                                <h2 class="font-heading text-xl text-white mb-3 group-hover:text-electric transition-colors">QUEL ÉQUIPEMENT PRÉVOIR POUR UN MATCH DE FIVE ?</h2>
+                                <p class="text-gray-400 text-sm leading-relaxed">
+                                    Baskets adaptées à la pelouse synthétique, chaussettes montantes, protège-tibias conseillés et gourde d'eau : la check-list simple avant de monter sur le terrain.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="px-6 pb-6">
+                            <span class="text-electric font-bold text-xs uppercase tracking-wider group-hover:underline">
+                                Lire l'article complet &rarr;
+                            </span>
+                        </div>
+                    </article>
+
+                    <!-- Article 5 -->
+                    <article data-category="anniversaire" onclick="openArticle('gouter-anniversaire')" class="blog-card bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col justify-between hover:border-electric transition-all cursor-pointer group">
+                        <div>
+                            <div class="relative h-48 w-full bg-gray-800 overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=900&q=80" alt="Goûter d'anniversaire sportif" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <span class="absolute top-3 left-3 bg-electric text-charcoal font-heading text-[10px] px-2.5 py-1 rounded">Anniversaire Enfant</span>
+                            </div>
+                            <div class="p-6">
+                                <div class="text-xs text-gray-400 mb-2">Goûter & Convivialité · 3 min de lecture</div>
+                                <h2 class="font-heading text-xl text-white mb-3 group-hover:text-electric transition-colors">GOÛTER D'ANNIVERSAIRE : ALLIER PLAISIR ET ÉNERGIE</h2>
+                                <p class="text-gray-400 text-sm leading-relaxed">
+                                    Après une heure d'efforts sur le terrain, les enfants ont soif et faim. Associez hydratation, gâteau d'anniversaire et douceurs légères pour recharger les batteries.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="px-6 pb-6">
+                            <span class="text-electric font-bold text-xs uppercase tracking-wider group-hover:underline">
+                                Lire l'article complet &rarr;
+                            </span>
+                        </div>
+                    </article>
+
+                    <!-- Article 6 -->
+                    <article data-category="five" onclick="openArticle('fair-play-five')" class="blog-card bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col justify-between hover:border-electric transition-all cursor-pointer group">
+                        <div>
+                            <div class="relative h-48 w-full bg-gray-800 overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1526232761682-d26e03ac148e?auto=format&fit=crop&w=900&q=80" alt="Fair-play et plaisir du jeu" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <span class="absolute top-3 left-3 bg-charcoal/90 text-electric border border-electric/40 font-heading text-[10px] px-2.5 py-1 rounded">Five Soccer</span>
+                            </div>
+                            <div class="p-6">
+                                <div class="text-xs text-gray-400 mb-2">Valeurs & Plaisir · 3 min de lecture</div>
+                                <h2 class="font-heading text-xl text-white mb-3 group-hover:text-electric transition-colors">FAIR-PLAY ET PLAISIR : LES CLÉS D'UN BON MATCH ENFANT</h2>
+                                <p class="text-gray-400 text-sm leading-relaxed">
+                                    Au Five, le score compte moins que l'envie de jouer ensemble. Encourager les passes, tourner aux cages et célébrer chaque action aide les enfants à prendre confiance.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="px-6 pb-6">
+                            <span class="text-electric font-bold text-xs uppercase tracking-wider group-hover:underline">
+                                Lire l'article complet &rarr;
+                            </span>
+                        </div>
+                    </article>
+
+                </div>
+
+                <!-- Appel à l'action vers Anniversaires & Réservation -->
+                <div class="mt-14 bg-gray-900 border border-electric/40 rounded-xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div>
+                        <h3 class="font-heading text-2xl text-white mb-1">PRÊT À ORGANISER SON ANNIVERSAIRE FOOT ?</h3>
+                        <p class="text-gray-400 text-sm">Découvre nos 4 formules clés en main ou réserve directement un créneau à Cagnes-sur-Mer.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="navigate('anniversaires')" class="bg-electric text-charcoal font-heading text-xs px-6 py-3.5 rounded hover:bg-white transition-colors">
+                            VOIR LES 4 FORMULES
+                        </button>
+                        <button onclick="navigate('reservation')" class="border border-offwhite text-offwhite font-heading text-xs px-6 py-3.5 rounded hover:bg-offwhite hover:text-charcoal transition-colors">
+                            RÉSERVER UN TERRAIN
+                        </button>
                     </div>
                 </div>
             </div>
@@ -460,28 +944,251 @@
     <div id="custom-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex justify-center items-center p-4">
         <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 md:p-8 max-w-md w-full">
             <h3 id="modal-title" class="font-heading text-2xl text-electric mb-3">Titre</h3>
-            <p id="modal-text" class="text-gray-300 mb-6 text-sm"></p>
+            <p id="modal-text" class="text-gray-300 mb-6 text-sm whitespace-pre-line"></p>
             <button onclick="closeModal()" class="w-full bg-electric text-charcoal font-heading py-3 rounded font-bold hover:bg-white transition-colors">COMPRIS</button>
         </div>
     </div>
 
     <!-- Footer -->
     <footer class="bg-[#0a0a0a] border-t border-gray-900 py-12 text-center text-gray-500 text-sm">
-        <div class="font-heading text-2xl font-black tracking-tighter text-gray-700 mb-4">URBAN<span class="text-gray-500">PLAY</span></div>
-        <p class="italic text-xs text-gray-600 mb-4">Prototype non commercial.</p>
+        <div class="font-heading text-2xl font-black tracking-tighter text-gray-700 mb-2">URBAN<span class="text-gray-500">PLAY</span></div>
+        <p class="text-xs text-gray-500 mb-2">Cagnes-sur-Mer · Ouvert 24h/24 & 7j/7</p>
+        <p class="italic text-xs text-gray-600">Prototype non commercial.</p>
     </footer>
 
     <!-- LOGIQUE JAVASCRIPT -->
     <script>
         let selectedPitch = null;
-        // Simulation dynamique des disponibilités selon l'heure choisie (true = disponible, false = utilisé)
+        const nightHours = ["23:00", "00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00"];
+
+        // Base de données complète des articles du Blog
+        const blogArticles = {
+            "anniversaire-parfait": {
+                badge: "Anniversaire Enfant",
+                meta: "Guide Parents · 6 à 12 ans · 4 min de lecture",
+                img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80",
+                title: "COMMENT ORGANISER L'ANNIVERSAIRE FOOT PARFAIT POUR SON ENFANT ?",
+                ctaLabel: "VOIR NOS 4 FORMULES ANNIVERSAIRES",
+                ctaPage: "anniversaires",
+                html: `
+                    <p>Organiser un anniversaire sur un terrain de football à 5 est l'assurance d'une journée mémorable pour votre enfant et ses amis. Contrairement à une fête à la maison, l'énergie des enfants est canalisée autour d'une activité collective encadrée et sécurisée.</p>
+                    <div class="bg-charcoal border-l-4 border-electric p-4 rounded-r-lg">
+                        <h3 class="font-heading text-base text-electric mb-2">1. LE RÉTROPLANNING IDÉAL POUR LES PARENTS</h3>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li><strong>J-21 :</strong> Réservez votre créneau (samedi ou dimanche après-midi) et envoyez les cartons d'invitation en précisant de venir en tenue de sport.</li>
+                            <li><strong>J-7 :</strong> Confirmez le nombre exact de participants (idéalement 10 à 12 enfants pour constituer 2 équipes équilibrées de 5 ou 6 joueurs) et recensez les éventuelles allergies alimentaires.</li>
+                            <li><strong>Jour J - 15 min :</strong> Arrivez un quart d'heure avant le coup d'envoi pour accueillir les copains, distribuer les chasubles et former les équipes.</li>
+                        </ul>
+                    </div>
+                    <h3 class="font-heading text-base text-white">2. LE DÉROULÉ TYPE D'UN ANNIVERSAIRE DE 2 HEURES</h3>
+                    <p>Pour que les enfants profitent à fond sans s'épuiser trop vite, découpez la séance en 4 temps forts : 10 minutes d'échauffement ludique avec ballon, 45 minutes de mini-matchs rythmés avec pauses eau toutes les 12 minutes, 15 minutes de concours de tirs au but, puis 40 minutes autour de la table d'anniversaire pour le gâteau, les bougies et l'ouverture des cadeaux.</p>
+                `
+            },
+            "bienfaits-five": {
+                badge: "Five Soccer (5 vs 5)",
+                meta: "Technique & Pédagogie · 3 min de lecture",
+                img: "https://images.unsplash.com/photo-1575361204480-aadea25e6e68?auto=format&fit=crop&w=1200&q=80",
+                title: "POURQUOI LE FIVE SOCCER EST IDÉAL POUR LES JEUNES JOUEURS ?",
+                ctaLabel: "RÉSERVER UN TERRAIN DE FIVE",
+                ctaPage: "reservation",
+                html: `
+                    <p>Le football à 5 (ou Five Soccer) se joue sur un terrain synthétique entouré de palissades, sans touche ni temps mort. Ce format dynamique transforme l'apprentissage du football pour les enfants comme pour les ados.</p>
+                    <div class="bg-charcoal border-l-4 border-electric p-4 rounded-r-lg">
+                        <h3 class="font-heading text-base text-electric mb-2">3 AVANTAGES CONCRETS DU 5 CONTRE 5</h3>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li><strong>3 fois plus de ballons touchés :</strong> Avec seulement 10 joueurs sur le terrain, impossible de rester isolé dans un couloir. Chaque enfant participe à la construction et à la finition.</li>
+                            <li><strong>Des décisions plus rapides :</strong> L'espace réduit oblige à lever la tête, jouer en une ou deux touches de balle et utiliser l'appui des partenaires.</li>
+                            <li><strong>Un jeu continu sans arrêt :</strong> Grâce aux parois du terrain, le ballon reste en mouvement, maintenant un rythme cardiaque régulier et un plaisir constant.</li>
+                        </ul>
+                    </div>
+                    <p>Que votre enfant joue déjà en club ou découvre le ballon rond pour la première fois, le Five gomme les écarts de niveau et met tout le monde au cœur de l'action.</p>
+                `
+            },
+            "idees-jeux": {
+                badge: "Anniversaire Enfant",
+                meta: "Animation & Mini-Tournois · 4 min de lecture",
+                img: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?auto=format&fit=crop&w=1200&q=80",
+                title: "5 IDÉES DE JEUX & MINI-TOURNOIS POUR UN ANNIVERSAIRE FOOT",
+                ctaLabel: "VOIR LE PACK BALLON D'OR",
+                ctaPage: "anniversaires",
+                html: `
+                    <p>Pour rythmer un anniversaire foot et garder tous les enfants captivés du début à la fin, varier les formats de jeu est la meilleure stratégie. Voici 5 animations plébiscitées sur nos terrains :</p>
+                    <div class="space-y-3">
+                        <div class="bg-charcoal p-4 rounded-lg border border-gray-800">
+                            <strong class="text-electric">1. La Mini-Coupe du Monde :</strong> Chaque équipe choisit le nom d'une sélection nationale. On enchaîne des matchs courts de 7 minutes avec classement en direct.
+                        </div>
+                        <div class="bg-charcoal p-4 rounded-lg border border-gray-800">
+                            <strong class="text-electric">2. Le Défi Transversale (Crossbar Challenge) :</strong> Depuis la ligne médiane, chaque joueur tente de toucher la barre transversale (3 points) ou un poteau (1 point).
+                        </div>
+                        <div class="bg-charcoal p-4 rounded-lg border border-gray-800">
+                            <strong class="text-electric">3. La Mort Subite aux Pénaltys :</strong> Un classique indémodable où chaque enfant tire à tour de rôle, avec changement de gardien à chaque tour.
+                        </div>
+                        <div class="bg-charcoal p-4 rounded-lg border border-gray-800">
+                            <strong class="text-electric">4. Le Roi du Terrain (1v1 / 2v2 express) :</strong> Des duels de 90 secondes : l'équipe qui marque reste sur le terrain, la suivante entre aussitôt.
+                        </div>
+                        <div class="bg-charcoal p-4 rounded-lg border border-gray-800">
+                            <strong class="text-electric">5. Le Grand Final Enfants vs Parents :</strong> Les 10 dernières minutes du créneau opposent les enfants aux parents accompagnateurs. Fous rires garantis !
+                        </div>
+                    </div>
+                `
+            },
+            "equipement-five": {
+                badge: "Five Soccer (5 vs 5)",
+                meta: "Équipement & Sécurité · 3 min de lecture",
+                img: "https://images.unsplash.com/photo-1518605368461-1e1e38ce81ba?auto=format&fit=crop&w=1200&q=80",
+                title: "QUEL ÉQUIPEMENT PRÉVOIR POUR UN MATCH DE FIVE ?",
+                ctaLabel: "RÉSERVER UN CRÉNEAU",
+                ctaPage: "reservation",
+                html: `
+                    <p>Jouer sur un gazon synthétique de dernière génération demande un équipement simple mais adapté pour éviter les glissades et préserver les articulations.</p>
+                    <div class="bg-charcoal border-l-4 border-electric p-4 rounded-r-lg">
+                        <h3 class="font-heading text-base text-electric mb-2">LA CHECK-LIST AVANT DE MONTER SUR LE TERRAIN</h3>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li><strong>Les chaussures (point essentiel) :</strong> Privilégiez des chaussures à petits picots moulés (semelle Turf / TF) ou des baskets de sport propres à semelle plate. Les crampons vissés ou métalliques sont strictement interdits pour la sécurité de tous.</li>
+                            <li><strong>La tenue :</strong> Un t-shirt respirant ou maillot de foot, un short léger et des chaussettes montantes.</li>
+                            <li><strong>Les protections :</strong> Les protège-tibias sont vivement recommandés pour les enfants lors des matchs et anniversaires.</li>
+                            <li><strong>L'hydratation :</strong> Une gourde nominative remplie d'eau fraîche (les ballons et chasubles sont fournis sur place).</li>
+                        </ul>
+                    </div>
+                `
+            },
+            "gouter-anniversaire": {
+                badge: "Anniversaire Enfant",
+                meta: "Goûter & Nutrition · 3 min de lecture",
+                img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80",
+                title: "GOÛTER D'ANNIVERSAIRE : ALLIER PLAISIR ET ÉNERGIE",
+                ctaLabel: "VOIR LE PACK CHAMPIONS",
+                ctaPage: "anniversaires",
+                html: `
+                    <p>Après 60 à 90 minutes d'efforts intenses sur le terrain, les jeunes footballeurs ont dépensé beaucoup d'énergie et ont besoin de se réhydrater rapidement avant de souffler les bougies.</p>
+                    <div class="bg-charcoal border-l-4 border-electric p-4 rounded-r-lg">
+                        <h3 class="font-heading text-base text-electric mb-2">NOS CONSEILS POUR UN GOÛTER RÉUSSI</h3>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li><strong>1. L'eau avant les sodas :</strong> Servez d'abord un grand verre d'eau fraîche à la sortie du terrain pour réhydrater l'organisme, puis passez aux jus de fruits et boissons festives.</li>
+                            <li><strong>2. Un gâteau facile à partager :</strong> Un moelleux au chocolat ou un gâteau thématique terrain de foot déjà pré-découpé permet de servir tout le monde en moins de 3 minutes.</li>
+                            <li><strong>3. Des petites portions :</strong> Complétez avec quelques brochettes de fruits frais, madeleines ou bonbons en coupelles individuelles.</li>
+                        </ul>
+                    </div>
+                    <p>Avec nos formules <strong>Pack Champions</strong> et <strong>Pack Ballon d'Or</strong>, tout le goûter (gâteau, boissons, friandises et dressage de table) est directement pris en charge par notre équipe.</p>
+                `
+            },
+            "fair-play-five": {
+                badge: "Five Soccer (5 vs 5)",
+                meta: "Valeurs & Esprit d'Équipe · 3 min de lecture",
+                img: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?auto=format&fit=crop&w=1200&q=80",
+                title: "FAIR-PLAY ET PLAISIR : LES CLÉS D'UN BON MATCH ENFANT",
+                ctaLabel: "REJOINDRE UN MATCH OUVERT",
+                ctaPage: "matchs",
+                html: `
+                    <p>Au Five, il n'y a pas d'arbitre officiel sur chaque terrain : ce sont les joueurs eux-mêmes qui font vivre le jeu dans le respect des règles et des partenaires.</p>
+                    <div class="bg-charcoal border-l-4 border-electric p-4 rounded-r-lg">
+                        <h3 class="font-heading text-base text-electric mb-2">LES 4 RÈGLES D'OR CHEZ URBAN PLAY</h3>
+                        <ul class="space-y-2 text-sm text-gray-300">
+                            <li><strong>Zéro tacle glissé :</strong> On défend debout pour éviter tout contact dangereux et garder un jeu fluide.</li>
+                            <li><strong>Rotation au poste de gardien :</strong> Toutes les 5 minutes, on change de gardien afin que chaque enfant puisse marquer des buts.</li>
+                            <li><strong>Encouragements positifs :</strong> On valorise la belle passe autant que le but inscrit.</li>
+                            <li><strong>Check de fin de match :</strong> On se tape dans la main à la fin du créneau, quel que soit le score final.</li>
+                        </ul>
+                    </div>
+                `
+            }
+        };
+
+        function openArticle(articleId) {
+            const art = blogArticles[articleId];
+            if (!art) return;
+
+            document.getElementById('article-modal-img').src = art.img;
+            document.getElementById('article-modal-img').alt = art.title;
+            document.getElementById('article-modal-badge').innerText = art.badge;
+            document.getElementById('article-modal-meta').innerText = art.meta;
+            document.getElementById('article-modal-title').innerText = art.title;
+            document.getElementById('article-modal-body').innerHTML = art.html;
+
+            const ctaBtn = document.getElementById('article-modal-cta');
+            ctaBtn.innerText = art.ctaLabel;
+            ctaBtn.onclick = function() {
+                closeArticleModal();
+                navigate(art.ctaPage);
+            };
+
+            document.getElementById('article-modal').classList.remove('hidden');
+        }
+
+        function closeArticleModal() {
+            document.getElementById('article-modal').classList.add('hidden');
+        }
+
+        // Disponibilités simulées pour tous les créneaux 24h/24
         const pitchAvailabilityByTime = {
             "":       { 1: true,  2: false, 3: true,  4: false },
+            "08:00":  { 1: true,  2: true,  3: true,  4: false },
+            "10:00":  { 1: true,  2: false, 3: true,  4: true  },
+            "12:00":  { 1: false, 2: true,  3: true,  4: false },
+            "14:00":  { 1: true,  2: true,  3: false, 4: true  },
+            "16:00":  { 1: true,  2: false, 3: true,  4: false },
             "18:00":  { 1: true,  2: true,  3: false, 4: true  },
             "19:00":  { 1: false, 2: true,  3: true,  4: false },
             "20:00":  { 1: true,  2: false, 3: false, 4: true  },
-            "21:00":  { 1: true,  2: true,  3: true,  4: false }
+            "21:00":  { 1: true,  2: true,  3: true,  4: false },
+            "22:00":  { 1: true,  2: false, 3: true,  4: true  },
+            "23:00":  { 1: true,  2: true,  3: false, 4: true  },
+            "00:00":  { 1: true,  2: false, 3: true,  4: true  },
+            "01:00":  { 1: true,  2: true,  3: true,  4: false },
+            "02:00":  { 1: false, 2: true,  3: true,  4: true  },
+            "03:00":  { 1: true,  2: true,  3: true,  4: true  },
+            "04:00":  { 1: true,  2: true,  3: false, 4: true  },
+            "05:00":  { 1: true,  2: true,  3: true,  4: true  },
+            "06:00":  { 1: true,  2: false, 3: true,  4: true  }
         };
+
+        // Gestion de la fenêtre pop-in promotionnelle (uniquement sur clic)
+        function openPromoPopin() {
+            document.getElementById('promo-popin').classList.remove('hidden');
+        }
+
+        function closePromoPopin() {
+            document.getElementById('promo-popin').classList.add('hidden');
+        }
+
+        function copyPromoCode() {
+            const code = document.getElementById('promo-code-text').innerText;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(code).catch(() => {});
+            }
+            const btn = document.getElementById('copy-promo-btn');
+            btn.innerText = 'Copié !';
+            btn.classList.add('bg-electric', 'text-charcoal');
+            setTimeout(() => {
+                btn.innerText = 'Copier';
+                btn.classList.remove('bg-electric', 'text-charcoal');
+            }, 2000);
+        }
+
+        function applyPromoAndBook() {
+            closePromoPopin();
+            document.getElementById('res-promo').value = 'URBAN20';
+            navigate('reservation');
+            updateRecap();
+        }
+
+        // Filtrage des articles du blog
+        function filterBlog(category, btnEl) {
+            document.querySelectorAll('.blog-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-electric', 'text-charcoal');
+                btn.classList.add('bg-gray-900', 'border', 'border-gray-700', 'text-offwhite');
+            });
+            btnEl.classList.remove('bg-gray-900', 'border', 'border-gray-700', 'text-offwhite');
+            btnEl.classList.add('bg-electric', 'text-charcoal');
+
+            document.querySelectorAll('.blog-card').forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
 
         function navigate(pageId) {
             document.querySelectorAll('.section-page').forEach(el => el.classList.remove('active'));
@@ -496,6 +1203,15 @@
         function onSlotChange() {
             const time = document.getElementById('res-time').value;
             const statusMap = pitchAvailabilityByTime[time] || pitchAvailabilityByTime[""];
+            const isNight = nightHours.includes(time);
+
+            // Bascule automatique du type sur "Session Nocturne" si horaire de nuit choisi
+            const typeSelect = document.getElementById('res-type');
+            if (isNight) {
+                typeSelect.value = "nocturne";
+            } else if (typeSelect.value === "nocturne" && time !== "") {
+                typeSelect.value = "amis";
+            }
 
             for (let i = 1; i <= 4; i++) {
                 const pitchEl = document.getElementById(`pitch-${i}`);
@@ -541,6 +1257,22 @@
             const duration = parseFloat(document.getElementById('res-duration').value);
             const players = document.getElementById('res-players').value;
             const type = document.getElementById('res-type');
+            const promoCode = document.getElementById('res-promo').value.trim().toUpperCase();
+            const isNight = nightHours.includes(time) || type.value === "nocturne";
+            const hasPromo = promoCode === 'URBAN20';
+
+            const nightBadge = document.getElementById('night-badge');
+            const periodEl = document.getElementById('recap-period');
+
+            if (isNight) {
+                nightBadge.classList.remove('hidden');
+                periodEl.innerText = '🌙 Session Nocturne (23h00 — 07h00)';
+                periodEl.className = 'text-electric font-bold';
+            } else {
+                nightBadge.classList.add('hidden');
+                periodEl.innerText = 'Journée / Soirée (07h00 — 23h00)';
+                periodEl.className = 'text-gray-300';
+            }
             
             document.getElementById('recap-date').innerText = date ? new Date(date).toLocaleDateString('fr-FR') : '-';
             document.getElementById('recap-time').innerText = time || '-';
@@ -549,8 +1281,22 @@
             document.getElementById('recap-players').innerText = players;
             document.getElementById('recap-type').innerText = type.options[type.selectedIndex].text;
 
-            const basePrice = 80;
-            document.getElementById('total-price').innerText = basePrice * duration;
+            const basePrice = isNight ? 70 : 80;
+            const rawTotal = basePrice * duration;
+            const promoRow = document.getElementById('recap-promo-row');
+            const oldPriceEl = document.getElementById('old-price');
+
+            if (hasPromo) {
+                const discounted = Math.round(rawTotal * 0.8);
+                document.getElementById('total-price').innerText = discounted;
+                oldPriceEl.innerText = `${rawTotal} €`;
+                oldPriceEl.classList.remove('hidden');
+                promoRow.classList.remove('hidden');
+            } else {
+                document.getElementById('total-price').innerText = rawTotal;
+                oldPriceEl.classList.add('hidden');
+                promoRow.classList.add('hidden');
+            }
         }
 
         function confirmReservation() {
@@ -564,7 +1310,11 @@
                 openModal('Terrain requis', 'Clique sur l’un des terrains disponibles en vert sur le plan 3D avant de continuer.');
                 return;
             }
-            openModal('Réservation en cours', `Simulation validée pour le Terrain ${selectedPitch}, le ${new Date(date).toLocaleDateString('fr-FR')} à ${time}. Aucun paiement réel n'est connecté sur ce prototype.`);
+            const isNight = nightHours.includes(time);
+            const sessionLabel = isNight ? ' (Session Nocturne avec accès QR Code)' : '';
+            const promoCode = document.getElementById('res-promo').value.trim().toUpperCase();
+            const promoLabel = promoCode === 'URBAN20' ? ' avec réduction -20% (URBAN20)' : '';
+            openModal('Réservation confirmée', `Simulation validée pour le Terrain ${selectedPitch}${sessionLabel}, le ${new Date(date).toLocaleDateString('fr-FR')} à ${time}${promoLabel}. Aucun paiement réel n'est connecté sur ce prototype.`);
         }
 
         function openModal(title, text) {
